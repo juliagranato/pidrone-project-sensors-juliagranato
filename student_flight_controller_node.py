@@ -73,13 +73,13 @@ class FlightController(object):
 
         # Initialize the Battery Message
         ################################
-        # TODO: create a Battery message with some initial values.
+        # : create a Battery message with some initial values.
         # In a different method, the message will be updated and
-        # published (you will do this in another TODO). Hint: read
+        # published (you will do this in another ). Hint: read
         # the Battery message file in the pidrone_pkg msg folder.
-        self.battery_message = ...
-        self.battery_message.CHANGE_FIELD_HERE = None
-        self.battery_message.CHANGE_FIELD_HERE = None
+        self.battery_message = Battery()
+        self.battery_message.vbat = 12.6 #Full Battery
+        self.battery_message.amperage = 1 #Just picked a value
 
         # Adjust this based on how low the battery should discharge
         self.minimum_voltage = 4.5
@@ -236,9 +236,8 @@ class FlightController(object):
         self.board.getData(MultiWii.ANALOG)
 
 
-        # TODO: Update Battery message:
-        self.battery_message.vbat = ... * 0.10
-        self.battery_message.amperage = ... 
+        self.battery_message.vbat = self.board.analog['vbat']* 0.10
+        self.battery_message.amperage = self.board.analog['amperage']
 
 
 
