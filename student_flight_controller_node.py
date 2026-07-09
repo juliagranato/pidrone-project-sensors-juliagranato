@@ -61,15 +61,15 @@ class FlightController(object):
 
         # Initialize the Imu Message
         ############################
-        # TODO: create an Imu message with some initial values.
+        # : create an Imu message with some initial values.
         # In a different method, the message will be updated and
-        # published (you will do this in another TODO).
+        # published (you will do this in another ).
         # Hint: investigate the Header message type, the Imu
         # message type, and rospy.Time.
-        self.imu_message = ...
-        self.imu_message.header = ...
+        self.imu_message = Imu()
+        self.imu_message.header = Header()
         self.imu_message.header.frame_id = 'Body'
-        self.imu_message.header.stamp = ...
+        self.imu_message.header.stamp = self.time
 
         # Initialize the Battery Message
         ################################
@@ -128,14 +128,14 @@ class FlightController(object):
         # extract lin_acc_x, lin_acc_y, lin_acc_z
         self.board.getData(MultiWii.RAW_IMU)
 
-        # TODO: calculate roll, pitch, and yaw in radians.
+        # : calculate roll, pitch, and yaw in radians.
         # Hint: roll is rotation about which axis? What about pitch?
         # Hint: what data is in self.board.attitude? What about
         # self.board.rawIMU? Is the relevant data in degrees or radians?
         # Hint: yaw is sometimes referred to as "heading".
-        roll = ...
-        pitch = ...
-        heading = ...
+        roll = self.board.attitude['angx'] * np.pi/180
+        pitch = self.board.attitude['angy'] * np.pi/180
+        heading = self.board.attitude['heading'] * np.pi/180
         # Note that at pitch angles near 90 degrees, the roll angle reading can
         # fluctuate a lot
         
@@ -143,33 +143,33 @@ class FlightController(object):
         # means angles are in radians and positive rotation is CCW
         heading = (-heading) % (2 * np.pi)
 
-        # TODO: calculate the previous roll, pitch, heading values.
+        # : calculate the previous roll, pitch, heading values.
         # Hint: start by printing self.imu_message.orientation and
         # type(self.imu_message.orientation) in order to understand
         # the data better.
         # Hint: recall that euler angles can be transformed to quaternions,
         # and vice-versa.
         # Hint: investigate tf.transformations.euler_from_quaternion.
-        previous_quaternion = self.imu_message.orientation
-        previous_roll, previous_pitch, previous_heading = ...
+        previous_quaternion = self.imu_message.orientation # returns quaternion
+        previous_roll, previous_pitch, previous_heading = tf.transformations.euler_from_quaternion(previous_quaternion)
 
         # Although quaternion_from_euler takes a heading in range [0, 2pi),
         # euler_from_quaternion returns a heading in range [0, pi] or [0, -pi).
         # Thus need to convert the returned heading back into the range [0, 2pi).
         previous_heading = previous_heading % (2 * np.pi)
 
-        # TODO: transform the current Euler angles into a quaternion
+        # : transform the current Euler angles into a quaternion
         # Hint: recall that Euler angles can be transformed to quaternions,
         # and vice-versa.
         # Hint: investigate tf.transformations.quaternion_from_euler.
-        quaternion = ...
+        quaternion = tf.transformations.quaternion_from_euler(roll, pitch, heading)
 
-        # TODO: extract the raw linear accelerations from the flight controller.
+        # : extract the raw linear accelerations from the flight controller.
         # Hint: what data is in self.board.attitude? What about
         # self.board.rawIMU? 
-        raw_acc_x = ...
-        raw_acc_y = ...
-        raw_acc_z = ...
+        raw_acc_x = self.board.rawIMU['ax']
+        raw_acc_y = self.board.rawIMU['ay']
+        raw_acc_z = self.board.rawIMU['az']
 
         # Turn the raw linear accelerations into real accelerations
         lin_acc_x = raw_acc_x * self.accRawToMss - self.accZeroX
@@ -198,35 +198,35 @@ class FlightController(object):
 
         # calculate the angular velocities of roll, pitch, and yaw in rad/s
         time = rospy.Time.now()
-        dt = ...
-        delta_roll = ...
-        delta_pitch = ...
-        delta_yaw = ...
+        dt = time - self.time
+        delta_roll = roll - previous_roll
+        delta_pitch = pitch - previous_pitch
+        delta_yaw = heading - [previous_heading]
         angvx = self.near_zero(delta_roll / dt)
         angvy = self.near_zero(delta_pitch / dt)
         angvz = self.near_zero(delta_yaw / dt)
         self.time = time
 
-        # TODO: Update the imu_message header stamp.
-        self.imu_message.header.stamp = ...
+        # Update the imu_message header stamp.
+        self.imu_message.header.stamp = self.time
         
-        # TODO: update the IMU message orientation
+        #  update the IMU message orientation
         # Hint: is the orientation a set of Euler angles or a quaternion?
-        self.imu_message.orientation.x = ...
-        self.imu_message.orientation.y = ...
-        self.imu_message.orientation.z = ...
-        self.imu_message.orientation.w = ...
+        self.imu_message.orientation.x = quaternion[0]
+        self.imu_message.orientation.y = quaternion[1]
+        self.imu_message.orientation.z = quaternion[2]
+        self.imu_message.orientation.w = quaternion[3]
 
-        # TODO: update the IMU message angular velocities.
-        self.imu_message.CHANGE_FIELD_HERE = angvx
-        self.imu_message.CHANGE_FIELD_HERE = angvy
-        self.imu_message.CHANGE_FIELD_HERE = angvz
+        #  update the IMU message angular velocities.
+        self.imu_message.angular_velocity.x = angvx
+        self.imu_message.angular_velocity.y = angvy
+        self.imu_message.angular_velocity.z = angvz
         
-        # TODO: update the IMU message linear accelerations.
-        self.imu_message.linear_acceleration.x = ...
-        self.imu_message.linear_acceleration.y = ...
-        self.imu_message.linear_acceleration.z = ...
-
+        # update the IMU message linear accelerations.
+        #normalized for gravity
+        self.imu_message.linear_acceleration.x = lin_acc_x_drone_body
+        self.imu_message.linear_acceleration.y = lin_acc_y_drone_body
+        self.imu_message.linear_acceleration.z = lin_acc_z_drone_body
 
     def update_battery_message(self):
         """
