@@ -305,7 +305,7 @@ class FlightController(object):
     def heartbeat_infrared_callback(self, msg):
         """Update ir sensor heartbeat"""
         self.heartbeat_infrared = rospy.Time.now()
-        self.range = ... # TODO
+        self.range = None# TODO
 
     def heartbeat_state_estimator_callback(self, msg):
         """Update state_estimator heartbeat"""
