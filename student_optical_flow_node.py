@@ -43,15 +43,16 @@ class OpticalFlowNode(object):
             # topic: /pidrone/picamera/twist
             # note: ensure that you pass in the argument queue_size=1 to the
             #       publisher to avoid lag
-        # Subscriber:
-        # TODO: subscribe to /pidrone/range to extract altitude (z position) for
+        self._pub_vel = rospy.Publisher('/pidrone/picamera/twist', TwistStamped, queue_size=1)
+        # Subscribers:
+        #subscribe to /pidrone/range to extract altitude (z position) for
         #       scaling
             # message type: Range
             # callback method: altitude_cb
         self._sub_alt = rospy.Subscriber('/pidrone/range', Range, self.altitude_cb, queue_size=1)
 
 
-        # TODO: subscribe to /raspicam_node/motion_vectors to extract the flow vectors for estimating velocity.
+        # subscribe to /raspicam_node/motion_vectors to extract the flow vectors for estimating velocity.
             # message type: MotionVectors
             # callback method: motion_cb
         self._sub_mv = rospy.Subscriber('/raspicam_node/motion_vectors', MotionVectors, self.motion_cb, queue_size=1)
@@ -68,9 +69,9 @@ class OpticalFlowNode(object):
 
         # calculate the planar and yaw motions
 
-        # TODO: calculate the optical flow velocities by summing the flow vectors
-        opflow_x = ??? 
-        opflow_y = ??? 
+        #calculate the optical flow velocities by summing the flow vectors
+        opflow_x = np.sum(np.array(x), dtype=np.int8)
+        opflow_y = np.sum(np.array(y), dtype=np.int8)
 
         
         x_motion = opflow_x * self.flow_coeff * self.altitude
@@ -79,15 +80,18 @@ class OpticalFlowNode(object):
         
         # TODO: Create a TwistStamped message, fill in the values you've calculated,
         #       and publish this using the publisher you've created in setup
-
-
+        message = TwistStamped()
+        message.header.stamp = rospy.Time.now()
+        message.twist.linear.x = x_motion
+        message.twist.linear.y = y_motion
+        self._pub_vel.publish(message)
 
         
         duration_from_last_altitude = rospy.Time.now() - self.altitude_ts
         if duration_from_last_altitude.to_sec() > 10:
             rospy.logwarn("No altitude received for {:10.4f} seconds.".format(duration_from_last_altitude.to_sec()))
 
-# TODO: Implement this method
+#  Implement this method
     def altitude_cb(self, msg):
         """
         The altitude of the robot
@@ -95,8 +99,8 @@ class OpticalFlowNode(object):
             msg:  the message publishing the altitude
 
         """
-        self.altitude = ??
-        self.altitude_ts = ??
+        self.altitude = msg.range
+        self.altitude_ts = msg.header.stamp
     
 def main():
     optical_flow_node = OpticalFlowNode("optical_flow_node")
