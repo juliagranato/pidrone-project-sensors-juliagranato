@@ -31,8 +31,6 @@ class OpticalFlowNode(object):
         self.altitude_ts = rospy.Time.now()
 
         # subscribers
-        self._sub_mv = rospy.Subscriber('/raspicam_node/motion_vectors', MotionVectors, self.motion_cb, queue_size=1)
-        self._sub_alt = rospy.Subscriber('/pidrone/range', Range, self.altitude_cb, queue_size=1)
         self.setup()
 
     def setup(self):
@@ -50,12 +48,13 @@ class OpticalFlowNode(object):
         #       scaling
             # message type: Range
             # callback method: altitude_cb
+        self._sub_alt = rospy.Subscriber('/pidrone/range', Range, self.altitude_cb, queue_size=1)
 
 
         # TODO: subscribe to /raspicam_node/motion_vectors to extract the flow vectors for estimating velocity.
             # message type: MotionVectors
             # callback method: motion_cb
-
+        self._sub_mv = rospy.Subscriber('/raspicam_node/motion_vectors', MotionVectors, self.motion_cb, queue_size=1)
 
 
 
