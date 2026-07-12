@@ -201,7 +201,7 @@ class FlightController(object):
         dt = time - self.time
         delta_roll = roll - previous_roll
         delta_pitch = pitch - previous_pitch
-        delta_yaw = heading - [previous_heading]
+        delta_yaw = heading - previous_heading
         angvx = self.near_zero(delta_roll / dt)
         angvy = self.near_zero(delta_pitch / dt)
         angvz = self.near_zero(delta_yaw / dt)
