@@ -198,7 +198,7 @@ class FlightController(object):
 
         # calculate the angular velocities of roll, pitch, and yaw in rad/s
         time = rospy.Time.now()
-        dt = time - self.time
+        dt = (time - self.time).to_sec()
         delta_roll = roll - previous_roll
         delta_pitch = pitch - previous_pitch
         delta_yaw = heading - previous_heading
