@@ -38,7 +38,7 @@ class OpticalFlowNode(object):
         # ROS setup:
         ############
         # Publisher:
-        # TODO: create a ROS publisher to publish the velocities
+        # : create a ROS publisher to publish the velocities
             # message type: TwistStamped
             # topic: /pidrone/picamera/twist
             # note: ensure that you pass in the argument queue_size=1 to the
@@ -78,7 +78,7 @@ class OpticalFlowNode(object):
         y_motion = opflow_y * self.flow_coeff * self.altitude
 
         
-        # TODO: Create a TwistStamped message, fill in the values you've calculated,
+        # : Create a TwistStamped message, fill in the values you've calculated,
         #       and publish this using the publisher you've created in setup
         message = TwistStamped()
         message.header.stamp = rospy.Time.now()

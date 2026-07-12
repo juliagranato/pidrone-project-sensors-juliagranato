@@ -151,7 +151,7 @@ class FlightController(object):
         # and vice-versa.
         # Hint: investigate tf.transformations.euler_from_quaternion.
         previous_quaternion = self.imu_message.orientation # returns quaternion
-        previous_roll, previous_pitch, previous_heading = tf.transformations.euler_from_quaternion(previous_quaternion)
+        previous_roll, previous_pitch, previous_heading = tf.transformations.euler_from_quaternion([previous_quaternion.x, previous_quaternion.y, previous_quaternion.z, previous_quaternion.w])
 
         # Although quaternion_from_euler takes a heading in range [0, 2pi),
         # euler_from_quaternion returns a heading in range [0, pi] or [0, -pi).
