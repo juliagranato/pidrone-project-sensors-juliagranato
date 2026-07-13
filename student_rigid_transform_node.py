@@ -63,7 +63,7 @@ class RigidTransformNode(object):
         #  create a ROS publisher for the estimated positions
             # message type: PoseStamped
             # topic: /pidrone/picamera/pose
-        self._pose_pub = rospy.Publisher('/pidrone/picamera/pose', PoseStamped, queue_size=1)
+        self._posepub = rospy.Publisher('/pidrone/picamera/pose', PoseStamped, queue_size=1)
 
         # Subscribers:
         #  subscribe to /pidrone/reset_transform
