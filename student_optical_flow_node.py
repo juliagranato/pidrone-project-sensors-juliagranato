@@ -70,8 +70,8 @@ class OpticalFlowNode(object):
         # calculate the planar and yaw motions
 
         #calculate the optical flow velocities by summing the flow vectors
-        opflow_x = np.sum(np.array(x), dtype=np.int8)
-        opflow_y = np.sum(np.array(y), dtype=np.int8)
+        opflow_x = np.sum(x)
+        opflow_y = np.sum(y)
 
         
         x_motion = opflow_x * self.flow_coeff * self.altitude
