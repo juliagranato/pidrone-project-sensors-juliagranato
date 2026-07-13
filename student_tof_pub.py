@@ -65,7 +65,7 @@ class ToFNode(object):
             field_of_view=10,
             min_range= 0.05, #50 mm
             max_range= 1.2, # 1200mm
-            range= distance_mm/1000 # should be in meters
+            range= distance_mm/1000.0 # should be in meters
         )
         # publish
         self._pub.publish(msg)
