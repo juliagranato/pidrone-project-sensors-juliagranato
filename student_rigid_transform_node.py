@@ -60,22 +60,26 @@ class RigidTransformNode(object):
         # ROS Setup
         ###########
         # Publishers:
-        # TODO: create a ROS publisher for the estimated positions
+        #  create a ROS publisher for the estimated positions
             # message type: PoseStamped
             # topic: /pidrone/picamera/pose
+        self._pose_estimate_pub = rospy.Publisher('/pidrone/picamera/pose', PoseStamped, queue_size=1)
 
         # Subscribers:
-        # TODO: subscribe to /pidrone/reset_transform
+        #  subscribe to /pidrone/reset_transform
             # message type: Empty
             # callback method: reset_callback
+        self._reset_sub = rospy.Subscriber("/pidrone/reset_transform", Empty, self.reset_callback, queue_size = 1)
 
-        # TODO: subscribe to /pidrone/position_control
+        # subscribe to /pidrone/position_control
             # message type: Bool
             # callback method: position_control_callback
+        self._position_control_sub = rospy.Subscriber("/pidrone/position_control", Bool, self.position_control_callback, queue_size=1)
 
-        # TODO: subscribe to /pidrone/state
+        #: subscribe to /pidrone/state
             # message type: State
             # callback method: state_callback
+        self._state_sub = rospy.Subscriber("/pidrone/state", State, self.state_callback, queue_size = 1)
             
         
         # Subscribers
@@ -132,7 +136,7 @@ class RigidTransformNode(object):
                 self.first_points = cv2.goodFeaturesToTrack(self.first_image, maxCorners=10, qualityLevel=0.01, minDistance=8)
                 # for point in self.first_points:
                 #     x = int(point[0,0])
-                #     y = int(point[0,1])
+                #     y = int(point[0,1]) 
                 #     print((x,y))
                 #     cv2.circle(dimage, center=(x,y), radius=2, color=(255,0,0), thickness=10)
                 # cv2.imshow("image", dimage)
@@ -185,13 +189,13 @@ class RigidTransformNode(object):
                         print("max_first_counter: ", self.max_first_counter)
 
                         int_displacement, yaw_previous = self.translation_and_yaw(transform_previous)
-                        # TODO calculate the position by adding the displacement to the previous
+                        #  calculate the position by adding the displacement to the previous
                         # position of the drone.
                         # HINT: use self.x_position_from_state and self.y_position_from_state as the
                         # previous position
 
-                        self.pose_msg.pose.position.x = self.x_position_from_state + ???
-                        self.pose_msg.pose.position.y = self.y_position_from_state + ???
+                        self.pose_msg.pose.position.x = self.x_position_from_state + int_displacement[0]
+                        self.pose_msg.pose.position.y = self.y_position_from_state + int_displacement[1]
                         
                         
                         
@@ -235,33 +239,42 @@ class RigidTransformNode(object):
         help you here.
         """
         
-        # TODO: extract the translation information from the transform variable. Divide the 
+        # : extract the translation information from the transform variable. Divide the 
         # the x displacement by 320, which is the width of the camera resolution. Divide the
         # y displacement by 240, the height of the camera resolution.
-        pixel_translation_x_y = ??? 
+        pixel_translation_x_y = transform[:,2]
         
         real_translation_x_y = [0.0, 0.0]
         real_translation_x_y[0] = (pixel_translation_x_y[0] / 320.0) * self.altitude
         real_translation_x_y[1] = (pixel_translation_x_y[1] / 240.0) * self.altitude
 
-        # TODO: use np.arctan2 and the transform variable to calculate the yaw
-        yaw = ???
+        # : use np.arctan2 and the transform variable to calculate the yaw
+        yaw = np.arctan2(transform[1,0], transform[0,0])
         
         return real_translation_x_y, yaw
 
     # subscribe /pidrone/reset_transform
     # ROS CALLBACK METHODS:
     #######################
-    # TODO: Implement
+    # : Implement
     def reset_callback(self, msg):
         """ Reset the current position and orientation """
         print("Resetting Phase")
+        self.first = True
+        self.first_image_counter = 0
+        self.max_first_counter = 0
+        self.last_first_time = None
+
+        self.x_position_from_state = 0.0
+        self.y_position_from_state = 0.0
+
+        self.pose_msg = PoseStamped()
 
 
-    # TODO: Implement
+    #  Implement
     def position_control_callback(self, msg):
         ''' Set whether the pose is calculated and published '''
-        pass
+        self.position_control = msg.data
 
     def state_callback(self, msg):
         """
@@ -279,3 +292,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
