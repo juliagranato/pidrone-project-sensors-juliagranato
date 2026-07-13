@@ -83,7 +83,7 @@ class OpticalFlowNode(object):
         message = TwistStamped()
         message.header.stamp = rospy.Time.now()
         message.twist.linear.x = x_motion
-        message.twist.linear.y = y_motion
+        message.twist.linear.y = -1 * y_motion #optical flow frame has origin in top left corner, need to convert to our global reference frame
         self._pub_vel.publish(message)
 
         
